@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>    
+	<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+</head>
+<body>
+<input type="button" onclick="getStores()" value="Stores" > 
+<input type="button" onclick="getPrtype()" value="Product Type" > 
+<input type="button" onclick="getProduct()" value="Products" > 
+<br>
+<br>
+<div class="maind">
+	<div class="rtable">
+	 <table id="rtable"  border="1">
+	</table>
+	</div>
+</div>	
+<script>
+getProduct();
+var sid = 0;
+var ptid = 0;
+var pid = 0;
+var table = document.getElementById("rtable");
+function getStores(){
+	clear();
+	var r= $('<input id="b1" type="button" onclick="getD1()" value="+"/>');
+	$("body").append(r);  
+	$.ajax({
+            url: 'http://localhost:3000/Store',
+            type: 'get',
+            dataType: 'json',
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log(textStatus);
+			},
+            success: function(data){
+				$.each(data, function(index, element) {
+					var row = table.insertRow(index);
+					var cell0 = row.insertCell(0);
+					var cell1 = row.insertCell(1);
+					var cell2 = row.insertCell(2);
+					cell0.innerHTML = element.id;
+					cell1.innerHTML = element.name;
+					cell2.innerHTML = element.city;
+					
+					var btnd = document.createElement('input');
+					 btnd.type = "button";
+					 btnd.className = "btnd";
+					 btnd.value = 'del';
+					 btnd.onclick = (function() {
+						delStore(element.id);
+					});
+					row.appendChild(btnd);
+					
+					var btne = document.createElement('input');
+					 btne.type = "button";
+					 btne.className = "btne";
+					 btne.value = 'edit';
+					 btne.onclick = (function() {
+						sid = element.id;
+						document.getElementById("d2is").value = element.name;
+						document.getElementById("d2ic").value = element.city;
+						$( "#dialog2" ).dialog("open");
+					});
+					row.appendChild(btne);
+				});
+			}
+    });
+}
+function getPrtype(){
+	clear();
+	var r= $('<input id="b1" type="button" onclick="getD3()" value="+"/>');
+	$("body").append(r);  
+	$.ajax({
+            url: 'http://localhost:3000/Prtype',
+            type: 'get',
+            dataType: 'json',
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log(textStatus);
+			},
+            success: function(data){
+				$.each(data, function(index, element) {
+					var row = table.insertRow(index);
+					var cell0 = row.insertCell(0);
+					var cell1 = row.insertCell(1);
+					cell0.innerHTML = element.id;
+					cell1.innerHTML = element.name;
+					
+					var btnd = document.createElement('input');
+					 btnd.type = "button";
+					 btnd.className = "btnd";
+					 btnd.value = 'del';
+					 btnd.onclick = (function() {
+						delPrtype(element.id);
+					});
+					row.appendChild(btnd);
+					
+					var btne = document.createElement('input');
+					 btne.type = "button";
+					 btne.className = "btne";
+					 btne.value = 'edit';
+					 btne.onclick = (function() {
+						ptid = element.id;
+						document.getElementById("d4ip").value = element.name;
+						$( "#dialog4" ).dialog("open");
+					});
+					row.appendChild(btne);
+				});
+			}
+    });
+}
+function getProduct(){
+	clear();
+	var r= $('<input id="b1" type="button" onclick="getD5()" value="+"/>');
+	$("body").append(r);  
+	$.ajax({
+            url: 'http://localhost:3000/Product',
+            type: 'get',
+            dataType: 'json',
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log(textStatus);
+			},
+            success: function(data){
+				$.each(data, function(index, element) {
+					var row = table.insertRow(index);
+					var cell0 = row.insertCell(0);
+					var cell1 = row.insertCell(1);
+					var cell2 = row.insertCell(2);
+					cell0.innerHTML = element.id;
+					cell1.innerHTML = element.name;
+					cell2.innerHTML = element.type;
+					
+					var btnd = document.createElement('input');
+					 btnd.type = "button";
+					 btnd.className = "btnd";
+					 btnd.value = 'del';
+					 btnd.onclick = (function() {
+						delProduct(element.id);
+					});
+					row.appendChild(btnd);
+					
+					var btne = document.createElement('input');
+					 btne.type = "button";
+					 btne.className = "btne";
+					 btne.value = 'edit';
+					 btne.onclick = (function() {
+						pid = element.id;
+						getPrtypeSel(element.ptid);
+						document.getElementById("d6ip").value = element.name;
+						$( "#dialog6" ).dialog("open");
+					});
+					row.appendChild(btne);
+					
+					var btnp = document.createElement('input');
+					 btnp.type = "button";
+					 btnp.className = "btnp";
+					 btnp.value = 'prices';
+					 btnp.onclick = (function() {
+						pid = element.id;
+						getPrices(pid);
+						$( "#dialog7" ).dialog("open");
+					});
+					row.appendChild(btnp);
+				});
+			}
+    });
+}
+
+function getD1(){
+    document.getElementById("d1is").value = '';
+	document.getElementById("d1ic").value = '';
+	$( "#dialog1" ).dialog("open");
+}
+function getD3(){
+    document.getElementById("d3ip").value = '';
+	$( "#dialog3" ).dialog("open");
+}
+function getD5(){
+    document.getElementById("d5ip").value = '';
+	getPrtypeSel();
+	$( "#dialog5" ).dialog("open");
+}
+
+function addStore(){
+	var is = document.getElementById("d1is").value;
+	var ic = document.getElementById("d1ic").value;
+	$.ajax({
+		url: 'http://localhost:3000/Store',
+		type: 'POST',   
+		contentType: 'application/json',
+		data: '{"city":"'+ic+'","name":"'+is+'"}',
+		success: function(result) {
+			getStores();
+		}
+	});
+	$( "#dialog1" ).dialog("close");	
+}
+function addPrtype(){
+	var ip = document.getElementById("d3ip").value;
+	$.ajax({
+		url: 'http://localhost:3000/Prtype',
+		type: 'POST',   
+		contentType: 'application/json',
+		data: '{"name":"'+ip+'"}',
+		success: function(result) {
+			getPrtype();
+		}
+	});
+	$( "#dialog3" ).dialog("close");	
+}
+function addProduct(){
+	var ip = document.getElementById("d5ip").value;
+	var it = document.getElementById("d5it").value;
+	$.ajax({
+		url: 'http://localhost:3000/Product',
+		type: 'POST',   
+		contentType: 'application/json',
+		data: '{"name":"'+ip+'","ptid":"'+it+'"}',
+		success: function(result) {
+			getProduct();
+		}
+	});
+	$( "#dialog5" ).dialog("close");	
+}
+
+function editStore(x){
+	var is = document.getElementById("d2is").value;
+	var ic = document.getElementById("d2ic").value;
+	$.ajax({
+		url: 'http://localhost:3000/Store/'+x,
+		type: 'PUT',   
+		contentType: 'application/json',
+		data: '{"city":"'+ic+'","name":"'+is+'"}',
+		success: function(result) {
+			getStores();
+		}
+	});
+	$( "#dialog2" ).dialog("close");	
+}
+function editPrtype(x){
+	var ip = document.getElementById("d4ip").value;
+	$.ajax({
+		url: 'http://localhost:3000/Prtype/'+x,
+		type: 'PUT',   
+		contentType: 'application/json',
+		data: '{"name":"'+ip+'"}',
+		success: function(result) {
+			getPrtype();
+		}
+	});
+	$( "#dialog4" ).dialog("close");	
+}
+function editProduct(x){
+	var ip = document.getElementById("d6ip").value;
+	var it = document.getElementById("d6it").value;
+	$.ajax({
+		url: 'http://localhost:3000/Product/'+x,
+		type: 'PUT',   
+		contentType: 'application/json',
+		data: '{"name":"'+ip+'","ptid":"'+it+'"}',
+		success: function(result) {
+			getProduct();
+		}
+	});
+	$( "#dialog6" ).dialog("close");	
+}
+
+function delStore(x){
+	var durl  = 'http://localhost:3000/Store/'+x
+	$.ajax({
+		url: durl,
+		type: 'DELETE',   
+		contentType: 'application/json',
+		success: function(result) {
+			getStores();
+		}
+	});	
+}
+function delPrtype(x){
+	var durl  = 'http://localhost:3000/Prtype/'+x
+	$.ajax({
+		url: durl,
+		type: 'DELETE',   
+		contentType: 'application/json',
+		success: function(result) {
+			getPrtype();
+		}
+	});	
+}
+function delProduct(x){
+	var durl  = 'http://localhost:3000/Product/'+x
+	$.ajax({
+		url: durl,
+		type: 'DELETE',   
+		contentType: 'application/json',
+		success: function(result) {
+			getProduct();
+		}
+	});	
+}
+
+function getPrtypeSel(x){
+	$("#d5it").empty();
+	$("#d6it").empty();
+	$.ajax({
+            url: 'http://localhost:3000/Prtype',
+            type: 'get',
+            dataType: 'json',
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log(textStatus);
+			},
+            success: function(data){
+				$.each(data, function(index, element) {
+					var x = document.getElementById("d5it");
+					var y = document.getElementById("d6it");
+					var option = document.createElement("option");
+					option.text = element.name;
+					option.value = element.id;
+					x.add(option);
+					var option2 = document.createElement("option");
+					option2.text = element.name;
+					option2.value = element.id;
+					y.add(option2);
+				});
+				document.getElementById("d6it").value = x;
+			}
+    });
+}
+
+function getPrices(x){
+	var durl  = 'http://localhost:3000/Product/'+x;
+	$("#ptable tr").remove();
+	var t = document.getElementById("ptable");
+	$.ajax({
+		url: durl,
+		type: 'GET',   
+		contentType: 'application/json',
+		success: function(result) {
+			$.each(result, function(index, element) {
+				var row = t.insertRow(index);
+				var cell0 = row.insertCell(0);
+				var cell1 = row.insertCell(1);
+				var cell2 = row.insertCell(2);
+				cell0.innerHTML = element.id;
+				cell1.innerHTML = element.name;
+				cell2.innerHTML = element.price;
+				
+				var checkbox = document.createElement('input');
+				checkbox.type = "checkbox";
+				checkbox.className = "cb";
+				checkbox.id = "cid";
+				row.appendChild(checkbox);
+			});
+		}
+	});	
+}
+
+function setPrice(x){
+	var ip = document.getElementById("d7ip").value;
+	var rr = $('#ptable').find('tr');
+	var rc = rr.find('input[type="checkbox"]:checked');
+	z = 0;
+	for (i = 0; i < rc.length; i++) {
+		var row = rc[i].parentNode;
+		$.ajax({
+				url: 'http://localhost:3000/Product/'+x,
+			type: 'POST',   
+			contentType: 'application/json',
+			data: '{"store":"'+row.cells[0].textContent+'","price":"'+ip+'"}',
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log(errorThrown);
+			},
+			success: function(result) {
+				if (typeof result.sqlMessage != "undefined") alert(result.sqlMessage);
+				z=z+1;
+				if (z == rc.length) {
+					getPrices(x);
+				}
+			}
+		});
+	} 
+}
+
+function clear(){
+	$("#rtable tr").remove();
+	$("#b1").remove();
+	$( "#dialog1" ).dialog("close");
+	$( "#dialog2" ).dialog("close");
+	$( "#dialog3" ).dialog("close");
+	$( "#dialog4" ).dialog("close");
+	$( "#dialog5" ).dialog("close");
+	$( "#dialog6" ).dialog("close");
+	$( "#dialog7" ).dialog("close");
+}
+
+$(function () {
+    $( "#dialog1" ).dialog({
+	closeOnEscape: true,
+	open: function(event, ui) {
+        $(".ui-dialog-titlebar-close", ui.dialog | ui).show();
+    },
+    autoOpen: false
+});});
+$(function () {
+    $( "#dialog2" ).dialog({
+	closeOnEscape: true,
+	open: function(event, ui) {
+        $(".ui-dialog-titlebar-close", ui.dialog | ui).show();
+    },
+    autoOpen: false
+});});
+$(function () {
+    $( "#dialog3" ).dialog({
+	closeOnEscape: true,
+	open: function(event, ui) {
+        $(".ui-dialog-titlebar-close", ui.dialog | ui).show();
+    },
+    autoOpen: false
+});});
+$(function () {
+    $( "#dialog4" ).dialog({
+	closeOnEscape: true,
+	open: function(event, ui) {
+        $(".ui-dialog-titlebar-close", ui.dialog | ui).show();
+    },
+    autoOpen: false
+});});
+$(function () {
+    $( "#dialog5" ).dialog({
+	closeOnEscape: true,
+	open: function(event, ui) {
+        $(".ui-dialog-titlebar-close", ui.dialog | ui).show();
+    },
+    autoOpen: false
+});});
+$(function () {
+    $( "#dialog6" ).dialog({
+	closeOnEscape: true,
+	open: function(event, ui) {
+        $(".ui-dialog-titlebar-close", ui.dialog | ui).show();
+    },
+    autoOpen: false
+});});
+$(function () {
+    $( "#dialog7" ).dialog({
+	closeOnEscape: true,
+	open: function(event, ui) {
+        $(".ui-dialog-titlebar-close", ui.dialog | ui).show();
+    },
+    autoOpen: false
+});});
+
+</script>
+<div id="dialog1" title="Add Store" hidden="hidden">
+	Store: <input id="d1is" type="text"  value=""><br>
+	City: <input id="d1ic" type="text"  value=""><br><br>
+	<button id="bd1" type="button"  onclick="addStore()">Save</button> 
+</div>
+<div id="dialog2" title="Edit Store" hidden="hidden">
+	Store: <input id="d2is" type="text"  value=""><br>
+	City: <input id="d2ic" type="text"  value=""><br><br>
+	<button id="bd1" type="button"  onclick="editStore(sid)">Save</button> 
+</div>
+<div id="dialog3" title="Add Product Type" hidden="hidden">
+	Product type: <input id="d3ip" type="text"  value=""><br><br>
+	<button id="bd1" type="button"  onclick="addPrtype()">Save</button> 
+</div>
+<div id="dialog4" title="Edit Product Type" hidden="hidden">
+	Product type: <input id="d4ip" type="text"  value=""><br><br>
+	<button id="bd1" type="button"  onclick="editPrtype(ptid)">Save</button> 
+</div>
+<div id="dialog5" title="Add Product" hidden="hidden">
+	Product: <input id="d5ip" type="text"  value=""><br>
+	Type: <select id="d5it"></select><br><br>
+	<button id="bd1" type="button"  onclick="addProduct()">Save</button> 
+</div>
+<div id="dialog6" title="Edit Product" hidden="hidden">
+	Product: <input id="d6ip" type="text"  value=""><br>
+	Type: <select id="d6it"></select><br><br>
+	<button id="bd1" type="button"  onclick="editProduct(pid)">Save</button> 
+</div>
+<div id="dialog7" title="Prices" hidden="hidden">
+	Set Price: <input id="d7ip" type="text"  value=""><br>
+	<button id="bd1" type="button"  onclick="setPrice(pid)">Set</button> <br><br>
+	<table id="ptable"  border="1">
+</div>
+</body>
+</html>
